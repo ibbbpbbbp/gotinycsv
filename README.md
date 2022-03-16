@@ -4,7 +4,7 @@
 An extremely small `Go` library that efficiently deserializes CSV format data.  
 Support for special CSV with vertically aligned fields.
 
-## Exaple
+## Example
 ```go
 package main
 

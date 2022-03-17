@@ -769,6 +769,13 @@ func Test_Load(t *testing.T) {
 		assert.Equal(t, "", entries[18].dummy)
 		assert.Equal(t, "", entries[19].dummy)
 	}
+	{
+		// illegal case 6 (io.Reader is nil)
+		entries := []*struct{}{}
+		err := Load(nil, 0, 100, &entries)
+
+		assert.EqualError(t, err, "reader is nil")
+	}
 }
 
 func Test_LoadVertically(t *testing.T) {
@@ -1386,5 +1393,12 @@ ID,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
 		assert.Equal(t, "", entries[17].dummy)
 		assert.Equal(t, "", entries[18].dummy)
 		assert.Equal(t, "", entries[19].dummy)
+	}
+	{
+		// illegal case 10 (io.Reader is nil)
+		entries := []*struct{}{}
+		err := Load(nil, 0, 100, &entries)
+
+		assert.EqualError(t, err, "reader is nil")
 	}
 }

@@ -107,6 +107,9 @@ func ensureSliceCapacity(ref reflect.Value, len int) error {
 // "out" is load destination. automatically ensures optimal capacity.
 // The first element of "ops" is time-layout
 func Load(r io.Reader, topmergin int, maxrows int, out interface{}, ops ...string) error {
+	if r == nil {
+		return fmt.Errorf("reader is nil")
+	}
 	refp, err := sliceRefPointer(out)
 	if err != nil {
 		return err
@@ -180,6 +183,9 @@ func Load(r io.Reader, topmergin int, maxrows int, out interface{}, ops ...strin
 // "out" is load destination. automatically ensures optimal capacity.
 // The first element of "ops" is time-layout
 func LoadVertically(r io.Reader, topmergin int, leftmergin int, maxcols int, out interface{}, ops ...string) error {
+	if r == nil {
+		return fmt.Errorf("reader is nil")
+	}
 	refp, err := sliceRefPointer(out)
 	if err != nil {
 		return err

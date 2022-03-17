@@ -38,7 +38,23 @@ func eachStructFieldRefs(ref reflect.Value) ([][]reflect.Value, error) {
 		}
 		for j := 0; j < elem0t.NumField(); j++ {
 			field := elemp.Field(j)
-			refs[i][j] = reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem()
+			ft := field.Type()
+			newref := reflect.NewAt(ft, unsafe.Pointer(field.UnsafeAddr())).Elem()
+			switch ft.Kind() {
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			case reflect.Float32:
+			case reflect.Float64:
+			case reflect.String:
+			case reflect.Struct:
+				switch newref.Interface().(type) {
+				case time.Time:
+				default:
+					return nil, fmt.Errorf("Unsupported types are used in structure fields")
+				}
+			default:
+				return nil, fmt.Errorf("Unsupported types are used in structure fields")
+			}
+			refs[i][j] = newref
 		}
 	}
 	return refs, nil
@@ -65,7 +81,11 @@ func setEntityViaRef(ref reflect.Value, timelayout, v string) error {
 		case time.Time:
 			t, _ := time.Parse(timelayout, v)
 			ref.Set(reflect.ValueOf(t))
+		default:
+			return fmt.Errorf("Unsupported types are used in structure fields")
 		}
+	default:
+		return fmt.Errorf("Unsupported types are used in structure fields")
 	}
 	return nil
 }
@@ -103,12 +123,16 @@ func ensureSliceCapacity(ref reflect.Value, len int) error {
 // Load a CSV.
 // "r" is CSV format reader.
 // Skip the "topmergin" lines from the top line.
-// An error occurs when the number of rows read reaches "maxrows".
+// An error occurs when the number of rows read reaches "topmergin + maxrows".
 // "out" is load destination. automatically ensures optimal capacity.
-// The first element of "ops" is time-layout
+// The first element of "ops" is time-layout.
+// This function does not emit an error if the conversion from a csv field to a structure field fails.
 func Load(r io.Reader, topmergin int, maxrows int, out interface{}, ops ...string) error {
 	if r == nil {
 		return fmt.Errorf("reader is nil")
+	}
+	if maxrows == 0 {
+		return fmt.Errorf("maxrows is 0")
 	}
 	refp, err := sliceRefPointer(out)
 	if err != nil {
@@ -131,7 +155,7 @@ func Load(r io.Reader, topmergin int, maxrows int, out interface{}, ops ...strin
 		if err != nil {
 			return err
 		}
-		if rows >= maxrows {
+		if rows >= topmergin+maxrows {
 			return fmt.Errorf("rows are too large")
 		}
 		r := make([]*string, len(record))
@@ -179,12 +203,16 @@ func Load(r io.Reader, topmergin int, maxrows int, out interface{}, ops ...strin
 // "r" is CSV format reader.
 // Skip the "topmergin" lines from the top line.
 // Skip the "leftmergin" columns from left edge.
-// An error occurs when the number of columns read reaches "maxcols".
+// An error occurs when the number of columns read reaches "leftmergin+maxcols".
 // "out" is load destination. automatically ensures optimal capacity.
 // The first element of "ops" is time-layout
+// This function does not emit an error if the conversion from a csv field to a structure field fails.
 func LoadVertically(r io.Reader, topmergin int, leftmergin int, maxcols int, out interface{}, ops ...string) error {
 	if r == nil {
 		return fmt.Errorf("reader is nil")
+	}
+	if maxcols == 0 {
+		return fmt.Errorf("maxcols is 0")
 	}
 	refp, err := sliceRefPointer(out)
 	if err != nil {

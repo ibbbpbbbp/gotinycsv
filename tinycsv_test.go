@@ -59,18 +59,8 @@ func Test_eachStructFieldRefs(t *testing.T) {
 		slice := []teststruct{{"", substruct{0, ""}}, {"", substruct{0, ""}}, {"", substruct{0, ""}}}
 		ref := reflect.ValueOf(slice)
 		refs, err := eachStructFieldRefs(ref)
-		assert.NoError(t, err)
-		assert.NotNil(t, refs)
-		assert.Equal(t, 3, len(refs))
-		assert.Equal(t, 2, len(refs[0]))
-		assert.Equal(t, 2, len(refs[1]))
-		assert.Equal(t, 2, len(refs[2]))
-		assert.Equal(t, unsafe.Pointer(&(slice[0].a)), unsafe.Pointer(refs[0][0].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[0].b)), unsafe.Pointer(refs[0][1].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[1].a)), unsafe.Pointer(refs[1][0].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[1].b)), unsafe.Pointer(refs[1][1].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[2].a)), unsafe.Pointer(refs[2][0].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[2].b)), unsafe.Pointer(refs[2][1].UnsafeAddr()))
+		assert.EqualError(t, err, "Unsupported types are used in structure fields")
+		assert.Nil(t, refs)
 	}
 	// illegal case 3 (not supported type (slice) is exist in slice)
 	{
@@ -83,18 +73,8 @@ func Test_eachStructFieldRefs(t *testing.T) {
 		slice := []teststruct{{"", []int{0, 0}}, {"", []int{0, 0}}, {"", []int{0, 0}}}
 		ref := reflect.ValueOf(slice)
 		refs, err := eachStructFieldRefs(ref)
-		assert.NoError(t, err)
-		assert.NotNil(t, refs)
-		assert.Equal(t, 3, len(refs))
-		assert.Equal(t, 2, len(refs[0]))
-		assert.Equal(t, 2, len(refs[1]))
-		assert.Equal(t, 2, len(refs[2]))
-		assert.Equal(t, unsafe.Pointer(&(slice[0].a)), unsafe.Pointer(refs[0][0].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[0].b)), unsafe.Pointer(refs[0][1].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[1].a)), unsafe.Pointer(refs[1][0].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[1].b)), unsafe.Pointer(refs[1][1].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[2].a)), unsafe.Pointer(refs[2][0].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[2].b)), unsafe.Pointer(refs[2][1].UnsafeAddr()))
+		assert.EqualError(t, err, "Unsupported types are used in structure fields")
+		assert.Nil(t, refs)
 	}
 	// illegal case 4 (not supported type (pointer) is exist in slice)
 	{
@@ -108,18 +88,8 @@ func Test_eachStructFieldRefs(t *testing.T) {
 		slice := []teststruct{{"", nil}, {"", nil}, {"", nil}}
 		ref := reflect.ValueOf(slice)
 		refs, err := eachStructFieldRefs(ref)
-		assert.NoError(t, err)
-		assert.NotNil(t, refs)
-		assert.Equal(t, 3, len(refs))
-		assert.Equal(t, 2, len(refs[0]))
-		assert.Equal(t, 2, len(refs[1]))
-		assert.Equal(t, 2, len(refs[2]))
-		assert.Equal(t, unsafe.Pointer(&(slice[0].a)), unsafe.Pointer(refs[0][0].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[0].b)), unsafe.Pointer(refs[0][1].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[1].a)), unsafe.Pointer(refs[1][0].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[1].b)), unsafe.Pointer(refs[1][1].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[2].a)), unsafe.Pointer(refs[2][0].UnsafeAddr()))
-		assert.Equal(t, unsafe.Pointer(&(slice[2].b)), unsafe.Pointer(refs[2][1].UnsafeAddr()))
+		assert.EqualError(t, err, "Unsupported types are used in structure fields")
+		assert.Nil(t, refs)
 	}
 }
 
@@ -197,32 +167,14 @@ func Test_setEntityViaRef(t *testing.T) {
 		}
 
 		slice := []teststruct{
-			{new(int), make([]int, 0), make(map[int]int)},
-			{new(int), make([]int, 0), make(map[int]int)},
-			{new(int), make([]int, 0), make(map[int]int)},
+			{new(int), []int{}, map[int]int{}},
+			{new(int), []int{}, map[int]int{}},
+			{new(int), []int{}, map[int]int{}},
 		}
 		ref := reflect.ValueOf(slice)
 		refs, err := eachStructFieldRefs(ref)
-		assert.NoError(t, err)
-		assert.NotNil(t, refs)
-		setEntityViaRef(refs[0][0], "2006-01-02", "10")
-		setEntityViaRef(refs[0][1], "2006-01-02", "aa")
-		setEntityViaRef(refs[0][2], "2006-01-02", "2022-01-01")
-		setEntityViaRef(refs[1][0], "2006-01-02", "20")
-		setEntityViaRef(refs[1][1], "2006-01-02", "bb")
-		setEntityViaRef(refs[1][2], "2006-01-02", "2022-01-02")
-		setEntityViaRef(refs[2][0], "2006-01-02", "30")
-		setEntityViaRef(refs[2][1], "2006-01-02", "cc")
-		setEntityViaRef(refs[2][2], "2006-01-02", "2022-01-03")
-		assert.Zero(t, *slice[0].a)
-		assert.Empty(t, slice[0].b)
-		assert.Empty(t, slice[0].c)
-		assert.Zero(t, *slice[1].a)
-		assert.Empty(t, slice[1].b)
-		assert.Empty(t, slice[1].c)
-		assert.Zero(t, *slice[1].a)
-		assert.Empty(t, slice[1].b)
-		assert.Empty(t, slice[1].c)
+		assert.EqualError(t, err, "Unsupported types are used in structure fields")
+		assert.Nil(t, refs)
 	}
 }
 
@@ -508,6 +460,64 @@ func Test_Load(t *testing.T) {
 		assert.Equal(t, "2011-02-03 00:00:00 +0000 UTC", entries[18].birth.String())
 		assert.Equal(t, "2011-10-03 00:00:00 +0000 UTC", entries[19].birth.String())
 	}
+	// normal case 3 (topmergin:9, maxrows:10)
+	{
+		csv := `1.0,あ,2011.12.12
+2.0,い,2011.12.13
+3.0,う,2011.12.14
+4.0,え,2011.5.12
+5.0,お,2011.3.22
+6.0,か,2011.4.1
+7.0,き,2000.12.1
+8.0,く,2011.1.11
+9.0,け,2011.2.10
+10.0,こ,2011.3.15
+11.0,さ,2011.7.21
+12.0,し,2011.8.9
+13.0,す,2011.10.15
+14.0,せ,2011.11.30
+15.0,そ,2011.9.3
+16.0,た,2011.6.5
+17.0,つ,2011.5.5
+18.0,て,2011.4.3
+19.0,と,2011.2.3
+`
+		type csventry struct {
+			id    float32
+			desc  string
+			birth time.Time
+		}
+
+		entries := []*csventry{}
+		err := Load(strings.NewReader(csv), 9, 10, &entries)
+
+		assert.NoError(t, err)
+		assert.Equal(t, 10, len(entries))
+		for i := 0; i < 10; i++ {
+			assert.Equal(t, float32(i+10), entries[i].id)
+		}
+		assert.Equal(t, "こ", entries[0].desc)
+		assert.Equal(t, "さ", entries[1].desc)
+		assert.Equal(t, "し", entries[2].desc)
+		assert.Equal(t, "す", entries[3].desc)
+		assert.Equal(t, "せ", entries[4].desc)
+		assert.Equal(t, "そ", entries[5].desc)
+		assert.Equal(t, "た", entries[6].desc)
+		assert.Equal(t, "つ", entries[7].desc)
+		assert.Equal(t, "て", entries[8].desc)
+		assert.Equal(t, "と", entries[9].desc)
+		assert.Equal(t, "2011-03-15 00:00:00 +0000 UTC", entries[0].birth.String())
+		assert.Equal(t, "2011-07-21 00:00:00 +0000 UTC", entries[1].birth.String())
+		assert.Equal(t, "2011-08-09 00:00:00 +0000 UTC", entries[2].birth.String())
+		assert.Equal(t, "2011-10-15 00:00:00 +0000 UTC", entries[3].birth.String())
+		assert.Equal(t, "2011-11-30 00:00:00 +0000 UTC", entries[4].birth.String())
+		assert.Equal(t, "2011-09-03 00:00:00 +0000 UTC", entries[5].birth.String())
+		assert.Equal(t, "2011-06-05 00:00:00 +0000 UTC", entries[6].birth.String())
+		assert.Equal(t, "2011-05-05 00:00:00 +0000 UTC", entries[7].birth.String())
+		assert.Equal(t, "2011-04-03 00:00:00 +0000 UTC", entries[8].birth.String())
+		assert.Equal(t, "2011-02-03 00:00:00 +0000 UTC", entries[9].birth.String())
+
+	}
 	// illegal case 1 (collapse format)
 	{
 		csv := `1.0,あ,2011.12.12
@@ -769,12 +779,49 @@ func Test_Load(t *testing.T) {
 		assert.Equal(t, "", entries[18].dummy)
 		assert.Equal(t, "", entries[19].dummy)
 	}
+	// illegal case 6 (io.Reader is nil)
 	{
-		// illegal case 6 (io.Reader is nil)
 		entries := []*struct{}{}
 		err := Load(nil, 0, 100, &entries)
 
-		assert.EqualError(t, err, "reader is nil")
+		assert.Error(t, err)
+	}
+	// illegal case 7 (unsupported type)
+	{
+		csv := `1.0,あ,2011.12.12
+2.0,い,2011.12.13
+3.0,う,2011.12.14
+`
+		type unspported struct {
+		}
+
+		type csventry struct {
+			id   float32
+			desc string
+			uns  unspported
+		}
+
+		entries := []*csventry{}
+		err := Load(strings.NewReader(csv), 0, 100, &entries)
+
+		assert.EqualError(t, err, "Unsupported types are used in structure fields")
+	}
+	// illegal case 8 (maxrows 0)
+	{
+		csv := `1.0,あ,2011.12.12
+2.0,い,2011.12.13
+3.0,う,2011.12.14
+`
+		type csventry struct {
+			id    float32
+			desc  string
+			birth time.Time
+		}
+
+		entries := []*csventry{}
+		err := Load(strings.NewReader(csv), 100, 0, &entries)
+
+		assert.EqualError(t, err, "maxrows is 0")
 	}
 }
 

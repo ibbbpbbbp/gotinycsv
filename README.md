@@ -89,8 +89,8 @@ Birth,1999.01.01,2001.02.02,2002.05.05,1999.06.06,2003.03.03
 
 	const topmergin = 1
 	const leftmergin = 1
-	const maxrows = 100
-	if err := gotinycsv.LoadVertically(strings.NewReader(CSV), topmergin, leftmergin, maxrows, &perssonal); err != nil {
+	const maxcols = 100
+	if err := gotinycsv.LoadVertically(strings.NewReader(CSV), topmergin, leftmergin, maxcols, &perssonal); err != nil {
 		fmt.Printf("%#v\n", err)
 	}
 	for _, v := range perssonal {

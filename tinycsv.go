@@ -124,15 +124,13 @@ func ensureSliceCapacity(ref reflect.Value, len int) error {
 // "r" is CSV format reader.
 // Skip the "topmergin" lines from the top line.
 // An error occurs when the number of rows read reaches "topmergin + maxrows".
+// if "maxrows" is set to 0, it will attempt to read the entire data regardless of the size of the csv data.
 // "out" is load destination. automatically ensures optimal capacity.
 // The first element of "ops" is time-layout.
 // This function does not emit an error if the conversion from a csv field to a structure field fails.
 func Load(r io.Reader, topmergin int, maxrows int, out interface{}, ops ...string) error {
 	if r == nil {
 		return fmt.Errorf("reader is nil")
-	}
-	if maxrows == 0 {
-		return fmt.Errorf("maxrows is 0")
 	}
 	refp, err := sliceRefPointer(out)
 	if err != nil {
@@ -155,7 +153,7 @@ func Load(r io.Reader, topmergin int, maxrows int, out interface{}, ops ...strin
 		if err != nil {
 			return err
 		}
-		if rows >= topmergin+maxrows {
+		if maxrows > 0 && rows >= topmergin+maxrows {
 			return fmt.Errorf("rows are too large")
 		}
 		r := make([]*string, len(record))
@@ -204,6 +202,7 @@ func Load(r io.Reader, topmergin int, maxrows int, out interface{}, ops ...strin
 // Skip the "topmergin" lines from the top line.
 // Skip the "leftmergin" columns from left edge.
 // An error occurs when the number of columns read reaches "leftmergin+maxcols".
+// if "maxcols" is set to 0, it will attempt to read the entire data regardless of the size of the csv data.
 // "out" is load destination. automatically ensures optimal capacity.
 // The first element of "ops" is time-layout
 // This function does not emit an error if the conversion from a csv field to a structure field fails.
@@ -240,7 +239,7 @@ func LoadVertically(r io.Reader, topmergin int, leftmergin int, maxcols int, out
 		return fmt.Errorf("leftmergin is too large")
 	}
 
-	if len(record[leftmergin:]) > maxcols {
+	if maxcols > 0 && len(record[leftmergin:]) > maxcols {
 		return fmt.Errorf("columns are too large")
 	}
 

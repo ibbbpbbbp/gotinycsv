@@ -821,7 +821,7 @@ func Test_Load(t *testing.T) {
 		entries := []*csventry{}
 		err := Load(strings.NewReader(csv), 100, 0, &entries)
 
-		assert.EqualError(t, err, "maxrows is 0")
+		assert.EqualError(t, err, "topmergin is too large")
 	}
 }
 
